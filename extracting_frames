@@ -1,0 +1,85 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Sat Jan 25 16:37:58 2020
+
+@author: john
+"""
+video_directory = []
+all_action_list = []
+import os
+import cv2
+directory = '/home/THU-READ_RGB/'  #THU-READ_RGB directory
+Activities = os.listdir(directory)
+for Active in Activities:
+    new_der = directory + Active + '/'
+    action_list = os.listdir(new_der)
+    for action in action_list:
+        all_action_list.append(action)
+        new_der_act = new_der + action + '/'
+        video_list = os.listdir(new_der_act)
+        for frames in video_list:
+            new_der_video = new_der_act + frames + '/'
+            last_list = os.listdir(new_der_video)
+            for file in last_list:
+                if file[:3] == 'RGB':
+                    final_der = new_der_video + file
+                    video_directory.append(final_der)
+                    
+
+# data directory
+train_dir = '/home/Data/Train/'
+valid_dir = '/home/Data/Valid/'
+test_dir = '/home/Data/Test/'
+
+##################################################################################
+# remove a subject from the list for testing and training
+subject_to_be_removed = 'gs'
+one_subject_out_video_directory = []
+for video in video_directory:
+    if subject_to_be_removed in video:
+        continue
+    else:
+        one_subject_out_video_directory.append(video)
+        
+##################################################################################
+## form a list for the validation data
+subject1 = 'gs_1'
+validation_list_directory = []
+for video in video_directory:
+    if subject1 in video:
+        validation_list_directory.append(video)
+##################################################################################
+#creating test data
+subject2 = 'gs_2'
+subject3 = 'gs_3'
+test_list_directory = []
+for video in video_directory:
+    if subject2 in video or subject3 in video:
+        test_list_directory.append(video)
+######################################################################################
+vid_n = 0        
+
+
+##### create a training/testing/validating folder and extract the frames
+for action in all_action_list:
+    directory =  test_dir + action
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    for video in test_list_directory:
+        if action in video: 
+            subj = video[len(video)-8:len(video)-4]
+            vid_n += 1
+            print(vid_n)
+            print(video)
+            cap= cv2.VideoCapture(video)
+            i=0
+            while(cap.isOpened()):
+                ret, frame = cap.read()
+                if ret == False:
+                    break
+                cv2.imwrite(directory + '/' + subj + '_' + str(i) + '.jpg',frame)
+                i+=1
+             
+            cap.release()
+            #cv2.destroyAllWindows()      
