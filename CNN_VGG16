@@ -1,0 +1,107 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Jan 30 01:41:53 2020
+
+@author: john
+"""
+
+ 
+# import the necessary packages
+from keras.preprocessing.image import ImageDataGenerator
+from keras.applications import VGG16
+from keras.layers.core import Dropout
+from keras.layers.core import Flatten
+from keras.layers.core import Dense
+from keras.layers import Input
+from keras import models
+from keras.optimizers import SGD
+from tensorflow.python.keras.layers import Lambda
+
+#from keras.applications.vgg16 import VGG16
+
+# import VGG16 pre-trained weights 
+vgg_conv = VGG16(weights='imagenet', include_top=False, input_shape=(224,224,3))
+for layer in vgg_conv.layers[:-4]:
+    layer.trainable = False
+ 
+# Check the trainable status of the individual layers
+for layer in vgg_conv.layers:
+    print(layer, layer.trainable)
+
+# place the head FC model on top of the base model (this will become
+# the actual model we will train)
+# Create the model
+model = models.Sequential()
+
+# Add the vgg convolutional base model
+model.add(vgg_conv)
+ 
+# Add new layers
+model.add(Flatten())
+model.add(Dense(1024, activation='relu'))
+model.add(Dropout(0.5))
+model.add(Dense(40, activation='softmax'))
+print(model.summary())
+
+
+#from convnetskeras.convnets import preprocess_image_batch, convnet
+
+train_dir = '/home/Data/Train/'
+valid_dir = '/home/Data/Valid/'
+test_dir = '/home/Data/Test/'
+##################################################################################
+train_datagen = ImageDataGenerator(
+        rescale=1./255)
+
+test_datagen = ImageDataGenerator(rescale=1./255)
+
+valid_datagen = ImageDataGenerator(rescale=1./255)
+
+###############################################################################
+test_generator = test_datagen.flow_from_directory(directory=test_dir,
+    target_size=(224, 224),
+    color_mode="rgb",
+    batch_size=32,
+    class_mode="categorical",
+    shuffle=False)
+
+
+train_generator = train_datagen.flow_from_directory(
+    directory=train_dir,
+    target_size=(224, 224),
+    color_mode="rgb",
+    batch_size=32,
+    class_mode="categorical",
+    shuffle=False
+)
+
+
+valid_generator = valid_datagen.flow_from_directory(
+    directory=valid_dir,
+    target_size=(224, 224),
+    color_mode="rgb",
+    batch_size=32,
+    class_mode="categorical",
+    shuffle=False
+)
+################################################################################
+
+sgd = SGD(lr=0.001, decay=1e-6, momentum=0.9, nesterov=True)
+
+## (4) Compile 
+model.compile(loss='mean_squared_error', optimizer=sgd,\
+ metrics=['accuracy'])
+
+
+STEPS = train_generator.n // train_generator.batch_size
+VALID_STEPS = valid_generator.n // train_generator.batch_size
+
+
+model.fit_generator(
+        train_generator,
+        steps_per_epoch=STEPS,
+        epochs=10,
+        validation_data=valid_generator,
+        validation_steps=VALID_STEPS)
+model.save_weights('Single_frame_weights_10_epochs.h5')
