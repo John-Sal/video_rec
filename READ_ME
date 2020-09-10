@@ -1,2 +1,2 @@
-Simple program that partially trains the VGG16 CNN model on the THU-READ action dataset
+Trians the last few layers of VGG16 CNN model on the THU-READ action dataset
 Please Download the dataset found at: http://ivg.au.tsinghua.edu.cn/dataset/THU_READ.php 
