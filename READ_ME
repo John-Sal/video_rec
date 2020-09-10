@@ -1,2 +1,3 @@
-Trians the last few layers of VGG16 CNN model on the THU-READ action dataset
+Trians the last few layers of VGG16 CNN model on the THU-READ action dataset.
+Youn can also add a LSTM layer to capture the time domain and make prediction based on it.
 Please Download the dataset found at: http://ivg.au.tsinghua.edu.cn/dataset/THU_READ.php 
